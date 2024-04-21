@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #fileInput {
+            display: none;
+        }
+        .btn{
+            border: none;
+            width:150px;
+            box-sizing:border-box;
+            padding: 10px 20px;
+            margin:10px;    
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload {
+            background-color: #decb22;
+            margin-top:50px;
+            transform:scale(1.5);
+            color: #fff;
+            
+        }
+        .upload:hover {
+            background-color: #45a049;
+        }
+
+        .browse{
+            background-color: #4caf50;
+            color:#fff;
+        }
+        .browse:hover{
+            background-color:#45a049
+        }
+
+        #video, #canvas {
+            display: none;
+            max-width: 100%;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .capture {
+            display: block;
+            background-color: #007bff;
+            color: #fff;
+            margin-top: 10px;
+        }
+        .capture:hover {
+            background-color: #0056b3;
+        }
+        h4{
+            margin:-5px;
+        }
+        #language {
+            width:150px;
+            text-align:center;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Image Upload</h2>
+        <input type="file" id="fileInput" accept="image/*">
+        <label for="fileInput" class="browse btn">Choose Image</label>
+        <h4> OR </h4>
+        <button id="captureButton" class="capture btn">Capture Image</button>
+        <select id="language" name="language">
+            <option value="english" selected>English</option>
+            <option value="hindi">Hindi</option>
+            <option value="chinese">Chinese</option>
+            <option value="spanish">Spanish</option>
+            <option value="french">French</option>
+            <option value="arabic">Arabic</option>
+            <option value="russian">Russian</option>
+            <option value="portuguese">Portuguese</option>
+            <option value="german">German</option>
+            <option value="japanese">Japanese</option>
+            <!-- Add more languages as needed -->
+        </select>
+        <video id="video" autoplay></video>
+        <canvas id="canvas"></canvas>
+        <form id="uploadForm" action = "/predict" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="image_data" id="imageData">
+            <input type="hidden" name="lang_type" id="selectedLanguage"> 
+            <button type="submit" class="upload btn">Upload</button>
+        </form>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const captureButton = document.getElementById('captureButton');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const imageDataInput = document.getElementById('imageData');
+        const selectedLanguageInput = document.getElementById('selectedLanguage');
+
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const scaleFactor = 500 / img.height;
+                        const scaledWidth = img.width * scaleFactor;
+                        const scaledHeight = 500;
+                        canvas.width = scaledWidth;
+                        canvas.height = scaledHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+                        const imageData = canvas.toDataURL('image/png');
+                        imageDataInput.value = imageData;
+                        video.style.display = 'none';
+                        canvas.style.display = 'block';
+                        captureButton.textContent = 'Capture Image';
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        captureButton.addEventListener('click', () => {
+            if (!video.srcObject) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                        video.style.display = 'block';
+                        canvas.style.display = 'none';
+                        captureButton.textContent = 'Capture';
+                    })
+                    .catch(err => {
+                        console.error('Error accessing the camera:', err);
+                    });
+            } else {
+                const context = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+                imageDataInput.value = imageData;
+                video.style.display = 'none';
+                canvas.style.display = 'block';
+                captureButton.textContent = 'Capture Image';
+            }
+        });
+        document.getElementById("selectedLanguage").value = document.getElementById('language').value;
+        document.getElementById('language').addEventListener('change', function() {
+            selectedLanguageInput.value = this.value;
+            console.log(document.getElementById("selectedLanguage"));
+        });
+    </script>
+</body>
+</html>
