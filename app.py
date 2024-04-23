@@ -41,14 +41,14 @@ def predict():
         cv2.imwrite("static/after.jpg", image)
 
         try:
-            cv2.imwrite("static/cropped.jpg", cropped)
+            cv2.imwrite("static/file.jpg", cropped)
         except:
             pass
 
         try:
-            img = cv2.imread("static/cropped.jpg", 0)
-        except:
             img = cv2.imread("static/file.jpg", 0)
+        except:
+            pass
 
         img = cv2.resize(img, (48, 48))
         img = img / 255
@@ -58,7 +58,7 @@ def predict():
         model = load_model("emotion_detection_model.h5")
 
         pred = model.predict(img)
-        label_map = ["Anger", "Neutral", "Fear", "Happy", "Sad", "Surprise"]
+        label_map = ["Angered", "Neutral", "Fearful", "Happy", "Sad", "Surprised"]
         pred = np.argmax(pred)
 
         final_pred = label_map[pred]

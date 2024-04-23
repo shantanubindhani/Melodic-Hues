@@ -2,8 +2,16 @@ import random
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
+
 client_id = ""
 client_secret = ""
+if client_id == "":
+    with open("clientid.key", "r") as file:
+        client_id = file.readline()
+if client_secret == "":
+    with open("clientsecret.key", "r") as file:
+        client_secret = file.readline()
+
 
 auth_manager = SpotifyClientCredentials(
     client_id=client_id, client_secret=client_secret
